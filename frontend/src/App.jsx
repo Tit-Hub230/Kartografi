@@ -1,35 +1,23 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+import './leaflet-icons-fix';
 import './App.css'
+import MapLeaflet from './components/MapLeaflet';
 
 function App() {
-  const [count, setCount] = useState(0)
+  
+  const fallbackMarkers = [
+    { id: 1, name: 'Prešeren Square', lat: 46.05108, lng: 14.50653, description: 'Center of Ljubljana' },
+  ];
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1 style={{ margin: '12px 0' }}>Kartografi</h1>
+      <p style={{ margin: '0 0 12px' }}>Click the map to add a local marker.</p>
+      <MapLeaflet initialMarkers={fallbackMarkers} fetchFromBackend={true} />
     </>
-  )
+  );
 }
 
 export default App
