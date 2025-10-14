@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "../styles/auth.css";
 
 export default function Register() {
   const { register } = useAuth();
   const nav = useNavigate();
   const [form, setForm] = useState({ username: "", password: "", confirm: "" });
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,45 +29,91 @@ export default function Register() {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "40px auto" }}>
-      <h2>Register</h2>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-        <label>
-          Username
-          <input
-            autoFocus
-            required
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            placeholder="yourname"
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            required
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="••••••••"
-          />
-        </label>
-        <label>
-          Confirm password
-          <input
-            type="password"
-            required
-            value={form.confirm}
-            onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-            placeholder="••••••••"
-          />
-        </label>
-        {error && <div style={{ color: "crimson" }}>{error}</div>}
-        <button disabled={loading}>{loading ? "Creating..." : "Create account"}</button>
-      </form>
-      <p style={{ marginTop: 12 }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <div className="auth-badge" aria-hidden>🗺️</div>
+          <div className="auth-title">
+            <h2>Create your Kartografi account</h2>
+            <p>Start mapping your journey</p>
+          </div>
+        </div>
+
+        <form className="auth-body" onSubmit={onSubmit}>
+          <div className="auth-field">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              autoFocus
+              required
+              className="auth-input"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="e.g. explorer01"
+              autoComplete="username"
+            />
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="password">Password</label>
+            <div className="auth-pass">
+              <input
+                id="password"
+                type={showPw ? "text" : "password"}
+                required
+                className="auth-input"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="auth-toggle"
+                onClick={() => setShowPw((s) => !s)}
+              >
+                {showPw ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          <div className="auth-field">
+            <label htmlFor="confirm">Confirm password</label>
+            <div className="auth-pass">
+              <input
+                id="confirm"
+                type={showConfirm ? "text" : "password"}
+                required
+                className="auth-input"
+                value={form.confirm}
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="auth-toggle"
+                onClick={() => setShowConfirm((s) => !s)}
+              >
+                {showConfirm ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          {error && <div className="auth-error">{error}</div>}
+
+          <div className="auth-actions">
+            <button className="auth-button" disabled={loading}>
+              {loading ? "Creating…" : "Create account"}
+            </button>
+          </div>
+
+          <div className="auth-foot">
+            <span>Already have an account?</span>
+            <Link to="/login">Sign in</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
