@@ -1,23 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './leaflet-icons-fix';
-import './App.css'
-import MapLeaflet from './components/MapLeaflet';
+import { Link, Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import MapLeaflet from "./components/MapLeaflet";
+import Login from "./pages/login";
+import Register from "./pages/Register";
+import "./leaflet-icons-fix";
 
-function App() {
-  
-  const fallbackMarkers = [
-    { id: 1, name: 'Prešeren Square', lat: 46.05108, lng: 14.50653, description: 'Center of Ljubljana' },
-  ];
-
-  return (
-    <>
-      <h1 style={{ margin: '12px 0' }}>Kartografi</h1>
-      <p style={{ margin: '0 0 12px' }}>Click the map to add a local marker.</p>
-      <MapLeaflet initialMarkers={fallbackMarkers} fetchFromBackend={true} />
-    </>
-  );
+function Protected({ children }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
 }
 
-export default App
+export default function App() {
+  const { user, logout } = useAuth();
+
+  return (
+    <div style={{ padding: 16 }}>
+      <header style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+        <Link to="/" style={{ fontWeight: 700 }}>Kartografi</Link>
+        <nav style={{ display: "flex", gap: 10 }}>
+          <Link to="/">Map</Link>
+        </nav>
+        <div style={{ marginLeft: "auto" }}>
+          {user ? (
+            <>
+              <span style={{ marginRight: 8 }}>hi, {user.username}</span>
+              <button onClick={logout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" style={{ marginRight: 8 }}>Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )}
+        </div>
+      </header>
+
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Protected>
+              <MapLeaflet />
+            </Protected>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </div>
+  );
+}
