@@ -8,6 +8,7 @@ import User from "../models/User.js";
  */
 export const createUser = async (req, res) => {
   try {
+    console.log("HERE");
     const { username, password, points } = req.body;
 
     if (!username || !password) {

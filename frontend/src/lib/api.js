@@ -1,8 +1,9 @@
 // src/lib/api.js
-const BASE = import.meta.env.VITE_API_URL; // e.g., http://localhost:5000
+const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, ""); // normalize trailing slash
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
+  const url = path.startsWith("/") ? `${BASE}${path}` : `${BASE}/${path}`;
+  const res = await fetch(url, {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
