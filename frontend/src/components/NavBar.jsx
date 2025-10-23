@@ -1,3 +1,4 @@
+// src/components/NavBar.jsx
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -15,7 +16,9 @@ export default function NavBar() {
           <NavLink to="/" end className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
             Map
           </NavLink>
-          {/* add more pages later */}
+          <NavLink to="/quiz" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
+            Quiz
+          </NavLink>
         </div>
 
         <div className="nav-right">

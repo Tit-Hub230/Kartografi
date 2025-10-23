@@ -1,8 +1,112 @@
-/* Layout */
-.main-wrap {
-    max-width: 1200px;
+/* ========== Base (fixed light/dark handling) ========== */
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+  
+    /* Light theme defaults */
+    color: #213547;
+    background-color: #ffffff;
+  
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Activate dark theme only when user prefers it */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color: rgba(255, 255, 255, 0.87);
+      background-color: #242424;
+    }
+  }
+  
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  html, body, #root {
+    height: 100%;
+  }
+  
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    /* IMPORTANT: remove flex centering so content can be full width */
+    display: block;
+    background: var(--app-bg, #f6f8fb);
+  }
+  
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: none;
+  }
+  a:hover { color: #535bf2; }
+  
+  h1 { font-size: 3.2em; line-height: 1.1; }
+  
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.2s;
+  }
+  button:hover { border-color: #646cff; }
+  button:focus,
+  button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
+  
+  /* Remove the old app.css centering constraints */
+  #root {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    text-align: initial;
+  }
+  
+  /* Optional: keep the old demo classes around (harmless) */
+  .logo { height: 6em; padding: 1.5em; transition: filter 300ms; will-change: filter; }
+  .logo:hover { filter: drop-shadow(0 0 2em #646cffaa); }
+  .logo.react:hover { filter: drop-shadow(0 0 2em #61dafbaa); }
+  @keyframes logo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo { animation: logo-spin infinite 20s linear; }
+  }
+  .card { padding: 2em; }
+  .read-the-docs { color: #888; }
+  
+  /* Leaflet small tweaks */
+  .leaflet-container { font-family: inherit; }
+  .leaflet-popup-content-wrapper { border-radius: 10px; }
+  .leaflet-control-zoom a { border-radius: 8px !important; }
+  
+  /* ========== Page styling you provided (polished) ========== */
+  
+  /* Layout: make it wider on desktop while staying comfy on smaller screens */
+  .main-wrap {
+    /* Full-width but capped; grows on large monitors */
+    width: min(95vw, 1400px);
     margin: 32px auto;
     padding: 0 16px;
+  }
+  
+  /* On very large displays, let it breathe more */
+  @media (min-width: 1440px) {
+    .main-wrap { width: min(94vw, 1600px); }
+  }
+  @media (min-width: 1800px) {
+    .main-wrap { width: min(92vw, 1760px); }
   }
   
   .hero {
@@ -11,7 +115,7 @@
   }
   .hero h1 {
     margin: 0 0 8px;
-    font-size: 28px;
+    font-size: clamp(28px, 3vw, 40px);
     line-height: 1.2;
   }
   .hero p {
@@ -37,18 +141,15 @@
     border-bottom: 1px solid #eef0f3;
     background: #fafbfd;
   }
-  .toolbar-title {
-    font-weight: 600;
-  }
-  .toolbar-spacer {
-    flex: 1;
-  }
+  .toolbar-title { font-weight: 600; }
+  .toolbar-spacer { flex: 1; }
   .search {
     min-width: 240px;
     padding: 10px 12px;
     border: 1px solid #e3e8ef;
     border-radius: 10px;
     outline: none;
+    background: #fff;
   }
   .search:focus {
     border-color: #9db7ff;
@@ -65,3 +166,20 @@
     border-color: #cfd7e3;
     background: #f7f9fc;
   }
+  
+  /* Map sizing helpers */
+  .map-viewport {
+    /* Use this class on the map container div instead of inline style if you prefer */
+    height: 75vh;
+  }
+  @media (min-width: 1024px) {
+    .map-viewport { height: 80vh; }
+  }
+  
+  /* Optional: a full-bleed variant to make the map ultra wide */
+  .full-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+
