@@ -1,0 +1,67 @@
+/* Layout */
+.main-wrap {
+    max-width: 1200px;
+    margin: 32px auto;
+    padding: 0 16px;
+  }
+  
+  .hero {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  .hero p {
+    margin: 0;
+    color: #5b6570;
+  }
+  
+  /* Card */
+  .map-card {
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #eef0f3;
+  }
+  
+  /* Toolbar */
+  .map-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 12px;
+    border-bottom: 1px solid #eef0f3;
+    background: #fafbfd;
+  }
+  .toolbar-title {
+    font-weight: 600;
+  }
+  .toolbar-spacer {
+    flex: 1;
+  }
+  .search {
+    min-width: 240px;
+    padding: 10px 12px;
+    border: 1px solid #e3e8ef;
+    border-radius: 10px;
+    outline: none;
+  }
+  .search:focus {
+    border-color: #9db7ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .tool {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #e3e8ef;
+    background: #fff;
+    cursor: pointer;
+  }
+  .tool:hover {
+    border-color: #cfd7e3;
+    background: #f7f9fc;
+  }

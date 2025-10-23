@@ -1,11 +1,16 @@
+// src/pages/Home.jsx
+import { useRef } from "react";
 import MapLeaflet from "../components/MapLeaflet";
+import countriesGeo from "../assets/countries.json"; // <- add the file under src/assets/
 
 export default function Home() {
+  const mapRef = useRef(null);
+
   return (
     <div className="main-wrap">
       <div className="hero">
         <h1>Explore the map</h1>
-        <p>Click anywhere to drop a marker. Data fetched from the backend.</p>
+        <p>Click anywhere to drop a marker. Countries are outlined & clickable.</p>
       </div>
 
       <div className="map-card">
@@ -13,13 +18,17 @@ export default function Home() {
           <span className="toolbar-title">Ljubljana</span>
           <input className="search" placeholder="Search places (UI only)" />
           <div className="toolbar-spacer" />
-          <button className="tool">Recenter</button>
-          <button className="tool">My location</button>
+          <button className="tool" onClick={() => mapRef.current?.recenter()}>Recenter</button>
+          <button className="tool" onClick={() => mapRef.current?.locate()}>My location</button>
         </div>
 
-        {/* Map takes the remaining space of the card */}
         <div style={{ height: "75vh" }}>
-          <MapLeaflet />
+          <MapLeaflet
+            ref={mapRef}
+            zoom={4}
+            fetchFromBackend={false}
+            countriesData={countriesGeo}   // <- no fetch, no 404s
+          />
         </div>
       </div>
     </div>
