@@ -6,17 +6,21 @@ import {
   getUserById,
   updateUserPoints,
   login,
-  deleteUser,
+  deleteUser,updateUserBasics, changePassword
 } from "../controllers/userController.js";
 
 const router = Router();
 
-// CRUD-ish
-router.post("/", createUser);                 // register
-router.get("/", listUsers);                   // list
-router.get("/:id", getUserById);              // read
-router.patch("/:id/points", updateUserPoints);// update points
-router.post("/login", login);                 // login demo
-router.delete("/:id", deleteUser);            // delete
+// backend/routes/userRoutes.js
+router.post("/", createUser);
+router.get("/", listUsers);
+router.get("/:id", getUserById);
+router.patch("/:id/points", updateUserPoints);
+router.post("/login", login);
+router.delete("/:id", deleteUser);
+
+// NEW (corrected)
+router.patch("/:id", updateUserBasics);
+router.post("/:id/password", changePassword);
 
 export default router;

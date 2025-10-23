@@ -118,3 +118,51 @@ export const deleteUser = async (req, res) => {
     return res.status(500).json({ message: "server error" });
   }
 };
+
+export const updateUserBasics = async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username || username.length < 3) {
+      return res.status(400).json({ message: "username must be 3+ characters" });
+    }
+    // ensure unique username
+    const taken = await User.findOne({ username, _id: { $ne: req.params.id } });
+    if (taken) return res.status(409).json({ message: "username already taken" });
+
+    const updated = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { username } },
+      { new: true, runValidators: true, select: "-password" }
+    );
+    if (!updated) return res.status(404).json({ message: "user not found" });
+    return res.json(updated);
+  } catch (err) {
+    console.error("updateUserBasics error:", err);
+    return res.status(500).json({ message: "server error" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "currentPassword and newPassword required" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "newPassword must be at least 6 characters" });
+    }
+
+    const user = await User.findById(req.params.id).select("+password");
+    if (!user) return res.status(404).json({ message: "user not found" });
+
+    const ok = await user.comparePassword(currentPassword);
+    if (!ok) return res.status(401).json({ message: "current password incorrect" });
+
+    user.password = newPassword; // will be hashed by pre('save')
+    await user.save();
+    return res.json({ message: "password updated" });
+  } catch (err) {
+    console.error("changePassword error:", err);
+    return res.status(500).json({ message: "server error" });
+  }
+};

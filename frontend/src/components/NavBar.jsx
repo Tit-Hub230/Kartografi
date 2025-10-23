@@ -26,6 +26,9 @@ export default function NavBar() {
             <>
               <span style={{opacity:.9}}>hi, <strong>{user.username}</strong></span>
               <button className="btn btn-outline" onClick={logout}>Logout</button>
+              <NavLink to="/profile" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
+            Profile
+          </NavLink>
             </>
           ) : (
             <>

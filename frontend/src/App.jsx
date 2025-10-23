@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/login";
 import Register from "./pages/Register";
 import Quiz from "./pages/Quiz";
+import Profile from "./pages/Profile";
 import "./leaflet-icons-fix";
 import "./styles/layout.css";
 import "./styles/styles.css";
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/quiz" element={<Protected> <Quiz/> </Protected>}/>
+        <Route path="/profile" element={<Protected><Profile /></Protected>} />
       </Routes>
     </div>
   );
