@@ -2,9 +2,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Quiz from "./pages/Quiz";
+import SloQuiz from "./pages/SloQuiz";
+import LeaderBoards from "./pages/LeaderBoard";
 import Profile from "./pages/Profile";
 import "./leaflet-icons-fix";
 import "./styles/layout.css";
@@ -25,7 +27,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/quiz" element={<Protected> <Quiz/> </Protected>}/>
+        <Route path="/sloquiz" element={<Protected> <SloQuiz/> </Protected>}/>
         <Route path="/profile" element={<Protected><Profile /></Protected>} />
+        <Route path="/leaderboards" element={<Protected><LeaderBoards /></Protected>} />
       </Routes>
     </div>
   );

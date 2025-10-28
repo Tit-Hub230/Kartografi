@@ -17,8 +17,15 @@ export default function NavBar() {
             Map
           </NavLink>
           <NavLink to="/quiz" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
-            Quiz
+            Guess countries
           </NavLink>
+           <NavLink to="/sloquiz" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
+            Guess Slovenian cities
+          </NavLink>
+            <NavLink to="/leaderboards" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
+            LeaderBoards
+          </NavLink>
+
         </div>
 
         <div className="nav-right">

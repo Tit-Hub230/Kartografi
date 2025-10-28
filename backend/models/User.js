@@ -23,6 +23,16 @@ const UserSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    slo_points: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },   
+    quiz_points:{
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );

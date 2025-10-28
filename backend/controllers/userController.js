@@ -1,6 +1,128 @@
+import express from "express";
+import cookieParser from "cookie-parser";
 // backend/controllers/userController.js
 import User from "../models/User.js";
 
+export const getSloLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find({}, "username slo_points")
+      .sort({ slo_points: -1 })
+      .limit(10); // top 10 only
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const getLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find({}, "username points")
+      .sort({ slo_points: -1 })
+      .limit(10); // top 10 only
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+export const getQuizLeaderboard = async (req, res) => {
+  try {
+    const users = await User.find({}, "username quiz_points")
+      .sort({ slo_points: -1 })
+      .limit(10); // top 10 only
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const updateSloHighScore = async (req, res) => {
+  try {
+    const userId = req.cookies.userId; 
+    const { score } = req.body;
+
+    if (!userId) return res.status(401).json({ error: "Not authenticated" });
+    if (typeof score !== "number") return res.status(400).json({ error: "score must be a number" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    let newHighScore = false;
+
+    if (score > (user.slo_points || 0)) {
+      user.slo_points = score;
+      await user.save();
+      newHighScore = true;
+    }
+
+    return res.json({
+      updated: newHighScore,
+      slo_points: user.slo_points,
+    });
+  } catch (err) {
+    console.error("Error updating slo_points:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export const getSloHighScore = async (req, res) => {
+  try {
+    console.log('Cookies: ', req.cookies);
+    const userId = req.cookies.userId;
+    
+    console.log(userId) 
+
+    // Grab the first cookie value (or find the specific one if you know the key)
+    const cookieKeys = Object.keys(req.cookies);
+    if (cookieKeys.length === 0) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+
+    console.log("User ID from cookie:", userId);
+
+    const user = await User.findById(userId).select("slo_points");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    return res.json({ slo_points: user.slo_points || 0 });
+  } catch (err) {
+    console.error("Error getting slo_points:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+/**
+ * POST /api/users/login
+ * body: { username, password }
+ * (simple demo login that just verifies creds and returns user;
+ *  later you can add JWT/session)
+ */
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username }).select("+password");
+    if (!user) return res.status(401).json({ message: "invalid credentials" });
+
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(401).json({ message: "invalid credentials" });
+
+    // In a real app, issue a JWT or set a session cookie here.
+    console.log("Logging in user:", user._id.toString());
+    //req.session.userId = user._id.toString();
+    res.cookie( "userId",user._id.toString(), {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: false, // Set to true in production if using HTTPS
+    });
+
+    return res.json(user); // toJSON strips password
+  } catch (err) {
+    console.error("login error:", err);
+    return res.status(500).json({ message: "server error" });
+  }
+};
 /**
  * POST /api/users
  * Create a user (register)
@@ -82,28 +204,7 @@ export const updateUserPoints = async (req, res) => {
   }
 };
 
-/**
- * POST /api/users/login
- * body: { username, password }
- * (simple demo login that just verifies creds and returns user;
- *  later you can add JWT/session)
- */
-export const login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username }).select("+password");
-    if (!user) return res.status(401).json({ message: "invalid credentials" });
 
-    const ok = await user.comparePassword(password);
-    if (!ok) return res.status(401).json({ message: "invalid credentials" });
-
-    // In a real app, issue a JWT or set a session cookie here.
-    return res.json(user); // toJSON strips password
-  } catch (err) {
-    console.error("login error:", err);
-    return res.status(500).json({ message: "server error" });
-  }
-};
 
 /**
  * DELETE /api/users/:id
@@ -166,3 +267,5 @@ export const changePassword = async (req, res) => {
     return res.status(500).json({ message: "server error" });
   }
 };
+
+
