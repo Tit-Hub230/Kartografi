@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import L from "leaflet";
 import SloMapLeaflet from "../components/SloMapLeaflet";
 import sloBorder from "../assets/sloBorder.json";
@@ -20,6 +20,7 @@ export default function Quiz() {
   const [highScore, setHighScore] = useState(0);
 
   const MAX_ROUNDS = 5;
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
   const customIcon = L.icon({
     iconUrl: pinIconPng,
@@ -30,7 +31,7 @@ export default function Quiz() {
   
   
   useEffect(() => {
-    fetch("http://localhost:5050/api/users/me/slo_highscore", {
+    fetch(`${apiBase}api/leaderboard/slo-highscore`, {
       method: "GET",
       credentials: "include", 
     })
@@ -38,7 +39,7 @@ export default function Quiz() {
       .then(data => setHighScore(data.slo_points))
       .catch(err => console.error(err));
 
-  }, []);
+  }, [apiBase]);
 
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
@@ -53,8 +54,8 @@ export default function Quiz() {
     return R * c;
   }
 
-  const fetchRandomCity = () => {
-    fetch("http://localhost:5050/api/cities/random")
+  const fetchRandomCity = useCallback(() => {
+    fetch(`${apiBase}api/cities/random`)
       .then((res) => res.json())
       .then((data) => {
         if (data.city) {
@@ -65,7 +66,7 @@ export default function Quiz() {
         }
       })
       .catch((err) => console.error("Error fetching city:", err));
-  };
+  }, [apiBase]);
 
   useEffect(() => {
     const next_round_button = document.getElementById("next_round");
@@ -73,7 +74,7 @@ export default function Quiz() {
       next_round_button.disabled = true;
     }
     fetchRandomCity();
-  }, []);
+  }, [fetchRandomCity]);
 
   function handleMarkerPlaced(latlng) {
     setClickedCoords([latlng.lat, latlng.lng]);
@@ -95,7 +96,7 @@ export default function Quiz() {
   function handleSubmit() {
     if (!targetCity || !mapRef.current || !clickedCoords) return;
 
-    fetch(`http://localhost:5050/api/cities/coords?name=${encodeURIComponent(targetCity)}`)
+    fetch(`${apiBase}api/cities/coords?name=${encodeURIComponent(targetCity)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.lat && data.lng) {
@@ -140,7 +141,7 @@ export default function Quiz() {
 
   // ✅ Save high score when game ends
   function saveHighScore(finalScore) {
-    fetch("http://localhost:5050/api/users/me/slo_highscore", {
+    fetch(`${apiBase}api/leaderboard/slo-highscore`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include", // include cookies

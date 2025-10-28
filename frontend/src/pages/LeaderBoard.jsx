@@ -1,113 +1,162 @@
 import { useEffect, useState } from "react";
 
+const CONTINENTS = [
+  { id: "all", name: "Open World" },
+  { id: "Africa", name: "Africa" },
+  { id: "Asia", name: "Asia" },
+  { id: "Europe", name: "Europe" },
+  { id: "North America", name: "North America" },
+  { id: "South America", name: "South America" },
+  { id: "Oceania", name: "Oceania" }
+];
+
 export default function Leaderboard() {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeBoard, setActiveBoard] = useState("slo"); // default board
+  const [gameType, setGameType] = useState("countries");
+  const [selectedContinent, setSelectedContinent] = useState("all");
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
-  const endpoints = {
-    slo: "http://localhost:5050/api/users/sloLeaderboard",
-    quiz: "http://localhost:5050/api/users/quizLeaderboard",
-    countries: "http://localhost:5050/api/users/leaderboard",
-  };
-
-  const fetchLeaderboard = (board) => {
+  const fetchLeaderboard = async (type, continent) => {
     setLoading(true);
-    fetch(endpoints[board], {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
+    try {
+      let url = `${apiBase}api/leaderboard?gameType=${type}`;
+      if (type === "countries" && continent) {
+        url += `&continent=${continent}`;
+      }
+      
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
         setLeaders(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(`Error fetching ${board} leaderboard:`, err);
-        setLoading(false);
-      });
+      } else {
+        console.error("Failed to fetch leaderboard");
+        setLeaders([]);
+      }
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      setLeaders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchLeaderboard(activeBoard);
-  }, [activeBoard]);
+    fetchLeaderboard(gameType, selectedContinent);
+  }, [gameType, selectedContinent, apiBase]);
 
-  if (loading) return <p>Loading leaderboard...</p>;
+  if (loading) return (
+    <div style={{ textAlign: "center", marginTop: 50, color: "#2d2a23" }}>
+      Loading leaderboard...
+    </div>
+  );
 
   const getRankStyle = (idx) => {
-    if (idx === 0) return { background: "#b4a24562" }; // gold
-    if (idx === 1) return { background: "#c0c0c071" }; // silver
-    if (idx === 2) return { background: "#cd803277" }; // bronze
-    return { background: idx % 2 === 0 ? "#f9f9f9" : "#eef1f5" };
+    if (idx === 0) return { background: "#ffd70030" };
+    if (idx === 1) return { background: "#c0c0c030" };
+    if (idx === 2) return { background: "#cd7f3230" };
+    return { background: idx % 2 === 0 ? "#ffffff" : "#f9fafb" };
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "30px auto", textAlign: "center", fontFamily: "'Segoe UI', sans-serif" }}>
-      <h2 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: 20, color: "#0077ff" }}>🏆 Leaderboards</h2>
+    <div className="main-wrap">
+      <div className="hero" style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: "2rem", color: "#2d2a23" }}>🏆 Leaderboards</h1>
+        <p style={{ color: "#5d5b53" }}>Compete with players around the world</p>
+      </div>
 
-      {/* Button group */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 25, gap: 10 }}>
-        {["slo", "quiz", "countries"].map((b) => (
+      <div className="map-card">
+        <div className="map-toolbar" style={{ flexWrap: "wrap", gap: 12 }}>
           <button
-            key={b}
-            onClick={() => setActiveBoard(b)}
+            onClick={() => setGameType("countries")}
             style={{
               padding: "10px 20px",
-              borderRadius: 8,
-              border: activeBoard === b ? "2px solid #0077ff" : "1px solid #ccc",
-              background: activeBoard === b ? "#0077ff" : "#f4f4f4",
-              color: activeBoard === b ? "#fff" : "#333",
+              borderRadius: 10,
+              border: gameType === "countries" ? "2px solid #2f6b4f" : "1px solid rgba(0,0,0,.12)",
+              background: gameType === "countries" ? "#2f6b4f" : "#fff",
+              color: gameType === "countries" ? "#fff" : "#2d2a23",
               cursor: "pointer",
               fontWeight: 600,
               transition: "0.2s all",
             }}
           >
-            {b === "slo" ? "SLO" : b === "quiz" ? "Quiz" : "Countries"}
+            Countries Quiz
           </button>
-        ))}
-      </div>
+          <button
+            onClick={() => setGameType("slovenian-cities")}
+            style={{
+              padding: "10px 20px",
+              borderRadius: 10,
+              border: gameType === "slovenian-cities" ? "2px solid #2f6b4f" : "1px solid rgba(0,0,0,.12)",
+              background: gameType === "slovenian-cities" ? "#2f6b4f" : "#fff",
+              color: gameType === "slovenian-cities" ? "#fff" : "#2d2a23",
+              cursor: "pointer",
+              fontWeight: 600,
+              transition: "0.2s all",
+            }}
+          >
+            Slovenian Cities
+          </button>
 
-      {/* Leaderboard table */}
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          background: "#fff",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          borderRadius: "12px",
-          overflow: "hidden",
-        }}
-      >
-        <thead style={{ background: "#0077ff", color: "#fff" }}>
-          <tr>
-            <th style={{ padding: "14px 12px" }}>#</th>
-            <th style={{ padding: "14px 12px" }}>Player</th>
-            <th style={{ padding: "14px 12px" }}>Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaders.map((u, idx) => (
-            <tr
-              key={u._id}
-              style={{
-                ...getRankStyle(idx),
-                borderBottom: "1px solid #ddd",
-                transition: "0.2s all",
-              }}
-            >
-              <td style={{ padding: "12px", fontWeight: idx < 3 ? 700 : 500 }}>{idx + 1}</td>
-              <td style={{ padding: "12px" }}>{u.username}</td>
-              <td style={{ padding: "12px", fontWeight: 600 }}>
-                {activeBoard === "slo"
-                  ? u.slo_points ?? 0
-                  : activeBoard === "quiz"
-                  ? u.quiz_points ?? 0
-                  : u.slo_points ?? 0}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          {gameType === "countries" && (
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+              <label style={{ fontWeight: 600, color: "#2d2a23" }}>Continent:</label>
+              <select
+                value={selectedContinent}
+                onChange={(e) => setSelectedContinent(e.target.value)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 10,
+                  border: "1px solid rgba(0,0,0,.12)",
+                  fontSize: "0.95rem",
+                  cursor: "pointer",
+                  background: "#fff",
+                  color: "#2d2a23"
+                }}
+              >
+                {CONTINENTS.map(cont => (
+                  <option key={cont.id} value={cont.id}>{cont.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}>
+            <thead style={{ background: "linear-gradient(135deg, #2f6b4f, #1f456e)", color: "#fff" }}>
+              <tr>
+                <th style={{ padding: "14px 12px", textAlign: "center", width: "60px" }}>#</th>
+                <th style={{ padding: "14px 12px", textAlign: "left" }}>Player</th>
+                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Score</th>
+                <th style={{ padding: "14px 12px", textAlign: "center", width: "100px" }}>Accuracy</th>
+                {gameType === "countries" && <th style={{ padding: "14px 12px", textAlign: "center", width: "150px" }}>Continent</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {leaders.length === 0 ? (
+                <tr>
+                  <td colSpan={gameType === "countries" ? 5 : 4} style={{ padding: "40px 20px", textAlign: "center", color: "#5d5b53" }}>
+                    No scores yet. Be the first!
+                  </td>
+                </tr>
+              ) : (
+                leaders.map((entry, idx) => (
+                  <tr key={entry._id} style={{ ...getRankStyle(idx), borderBottom: "1px solid rgba(0,0,0,.06)", transition: "0.2s all" }}>
+                    <td style={{ padding: "12px", fontWeight: idx < 3 ? 700 : 500, color: "#2d2a23", textAlign: "center" }}>
+                      {idx + 1}{idx === 0 && " 🥇"}{idx === 1 && " 🥈"}{idx === 2 && " 🥉"}
+                    </td>
+                    <td style={{ padding: "12px", color: "#2d2a23" }}>{entry.username}</td>
+                    <td style={{ padding: "12px", fontWeight: 600, textAlign: "center", color: "#2f6b4f" }}>{entry.score}</td>
+                    <td style={{ padding: "12px", textAlign: "center", color: "#5d5b53" }}>{entry.percentage}%</td>
+                    {gameType === "countries" && <td style={{ padding: "12px", color: "#5d5b53", textAlign: "center" }}>{entry.continent}</td>}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

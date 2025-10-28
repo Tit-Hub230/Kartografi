@@ -23,7 +23,7 @@ export default function NavBar() {
             Guess Slovenian cities
           </NavLink>
             <NavLink to="/leaderboards" className={({isActive}) => "nav-link" + (isActive ? " active" : "")}>
-            LeaderBoards
+            Leaderboards
           </NavLink>
 
         </div>

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export default function Profile() {
   const { user, setUser, logout } = useAuth(); // assume setUser exists; if not, remove and just refetch
   const navigate = useNavigate();
-  const apiBase = import.meta.env.VITE_API_URL; // e.g. http://localhost:5050
+  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
   const [loading, setLoading] = useState(true);
   const [savingName, setSavingName] = useState(false);
@@ -27,7 +27,7 @@ export default function Profile() {
       try {
         setLoading(true);
         setError("");
-        const res = await fetch(`${apiBase}/api/users/${user._id}`, { credentials: "include" });
+        const res = await fetch(`${apiBase}api/users/${user._id}`, { credentials: "include" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setProfile(data);
@@ -47,7 +47,7 @@ export default function Profile() {
     try {
       setSavingName(true);
       setError("");
-      const res = await fetch(`${apiBase}/api/users/${user._id}`, {
+      const res = await fetch(`${apiBase}api/users/${user._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username.trim() }),
@@ -79,7 +79,7 @@ export default function Profile() {
     try {
       setChangingPw(true);
       setError("");
-      const res = await fetch(`${apiBase}/api/users/${user._id}/password`, {
+      const res = await fetch(`${apiBase}api/users/${user._id}/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword: pwCurrent, newPassword: pwNew }),
@@ -107,7 +107,7 @@ export default function Profile() {
     try {
       setDeleting(true);
       setError("");
-      const res = await fetch(`${apiBase}/api/users/${user._id}`, {
+      const res = await fetch(`${apiBase}api/users/${user._id}`, {
         method: "DELETE",
         credentials: "include",
       });

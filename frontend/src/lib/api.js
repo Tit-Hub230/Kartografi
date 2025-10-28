@@ -1,5 +1,5 @@
 // src/lib/api.js
-const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, ""); // normalize trailing slash
+const BASE = (import.meta.env.VITE_API_URL || "http://localhost:5050").replace(/\/+$/, ""); // normalize trailing slash
 
 async function request(path, options = {}) {
   const url = path.startsWith("/") ? `${BASE}${path}` : `${BASE}/${path}`;

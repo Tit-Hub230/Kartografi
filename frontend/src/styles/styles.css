@@ -183,3 +183,15 @@
     margin-right: calc(50% - 50vw);
   }
 
+  /* ========== Quiz Page Styles ========== */
+  .setup-container .continent-btn:hover,
+  .setup-container .mode-btn:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
+  
+  .setup-container .continent-btn:active,
+  .setup-container .mode-btn:active {
+    transform: translateY(0);
+  }

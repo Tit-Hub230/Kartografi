@@ -1,20 +1,14 @@
-// src/components/MapLeaflet.jsx
+// src/components/QuizMap.jsx
 import { useEffect, useMemo, useState, useImperativeHandle, forwardRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-// Click-to-add disabled for quiz mode
-function ClickToAddMarker() {
-  // Disabled - we don't want markers placed during quiz
-  return null;
-}
-
-// Countries layer that can use inline data OR fetch a URL
+// Countries layer for quiz - no tooltips or labels
 function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
   const [geo, setGeo] = useState(data ?? null);
 
   useEffect(() => {
-    if (data || !dataUrl) return; // already have data or no URL given
+    if (data || !dataUrl) return;
     let cancelled = false;
     (async () => {
       try {
@@ -50,7 +44,7 @@ function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
     const selectedIso3 = (selectedCountry?.properties?.ISO_A3 || selectedCountry?.properties?.iso_a3 || '').toUpperCase().trim();
     const selectedName = (selectedCountry?.properties?.name || selectedCountry?.properties?.ADMIN || '').trim();
     
-    layer.bindTooltip(name, { sticky: true });
+    // NO TOOLTIP - don't reveal country name during quiz
 
     // Check if this is the selected country using multiple criteria
     // Compare ISO-2, ISO-3 (excluding "-99" placeholder), and fallback to name comparison
@@ -79,7 +73,7 @@ function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
         }
       },
       click: (e) => {
-        // Don't show popup - just trigger the click handler
+        // Just trigger the click handler - no popup
         onCountryClick?.(feature, e);
       },
     });
@@ -89,58 +83,23 @@ function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
   return <GeoJSON data={geo} style={() => baseStyle} onEachFeature={onEachFeature} key={JSON.stringify(selectedCountry)} />;
 }
 
-const MapLeaflet = forwardRef(function MapLeaflet(
+const QuizMap = forwardRef(function QuizMap(
   {
     center = { lat: 46.0569, lng: 14.5058 },
     zoom = 4,
-    initialMarkers = [],
-    fetchFromBackend = false,
-    countriesData,                // <- NEW: pass inline GeoJSON
-    countriesUrl,                 // optional fallback URL
-    onCountryClick,               // <- NEW: callback for country clicks
-    selectedCountry,              // <- NEW: currently selected country for highlighting
+    countriesData,
+    countriesUrl,
+    onCountryClick,
+    selectedCountry,
   },
   ref
 ) {
-  const [markers, setMarkers] = useState(initialMarkers);
-  const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
-
-  useEffect(() => {
-    if (!fetchFromBackend || !apiBase) return;
-    (async () => {
-      try {
-        const res = await fetch(`${apiBase}api/places`, { cache: 'no-cache' });
-        if (res.status === 404) {
-          console.warn('No /api/places route (404). Skipping markers fetch.');
-          return;
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (Array.isArray(data) && data.length) setMarkers(data);
-      } catch (e) {
-        console.warn('Failed to fetch markers:', e);
-      }
-    })();
-  }, [apiBase, fetchFromBackend]);
-
   const mapCenter = useMemo(() => [center.lat, center.lng], [center]);
 
   function MapControlBridge() {
     const map = useMap();
     useImperativeHandle(ref, () => ({
       recenter: () => map.flyTo(mapCenter, zoom, { duration: 0.6 }),
-      locate: () => {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const { latitude, longitude } = pos.coords;
-            map.flyTo([latitude, longitude], Math.max(12, zoom), { duration: 0.6 });
-            L.marker([latitude, longitude]).addTo(map).bindPopup('You are here').openPopup();
-          },
-          (err) => console.warn('Geolocation error:', err),
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      },
     }), [map]);
     return null;
   }
@@ -152,39 +111,24 @@ const MapLeaflet = forwardRef(function MapLeaflet(
         zoom={zoom}
         scrollWheelZoom
         style={{ height: '100%', width: '100%' }}
-        preferCanvas
-        worldCopyJump
-        attributionControl
-        zoomControl
+        zoomControl={true}
+        attributionControl={false}
       >
-        <MapControlBridge />
-
+        {/* Use tile layer without labels */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution=""
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
         />
-
-        <CountriesLayer 
-          data={countriesData} 
-          dataUrl={countriesUrl} 
+        <CountriesLayer
+          data={countriesData}
+          dataUrl={countriesUrl}
           onCountryClick={onCountryClick}
           selectedCountry={selectedCountry}
         />
-
-        {markers.map((m) => (
-          <Marker key={m.id ?? `${m.lat},${m.lng}`} position={[m.lat, m.lng]} icon={new L.Icon.Default()}>
-            <Popup>
-              <strong>{m.name ?? 'Unnamed place'}</strong>
-              {m.description ? <p style={{ margin: '6px 0 0' }}>{m.description}</p> : null}
-              <div style={{ fontSize: 12, marginTop: 6, opacity: 0.7 }}>
-                {m.lat.toFixed(5)}, {m.lng.toFixed(5)}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <MapControlBridge />
       </MapContainer>
     </div>
   );
 });
 
-export default MapLeaflet;
+export default QuizMap;

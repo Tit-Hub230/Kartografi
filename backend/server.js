@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import cityRoutes from "./routes/cityRoute.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import cookieParser from "cookie-parser";
 
 
@@ -29,10 +30,11 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/cities", cityRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 // db + server
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kartografi";
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 mongoose.connect(MONGO_URI)
   .then(() => {

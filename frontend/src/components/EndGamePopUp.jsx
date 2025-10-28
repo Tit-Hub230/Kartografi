@@ -1,4 +1,7 @@
-export default function EndGameModal({ score, rounds, onRestart, highScore }) {
+export default function EndGameModal({ score, totalQuestions, onRestart, onExit, highScore }) {
+  const maxScore = totalQuestions * 100; // 100 points per question, max 500 for 5 questions
+  const percentage = totalQuestions > 0 ? Math.round((score / maxScore) * 100) : 0;
+  
   return (
     <div
       style={{
@@ -24,25 +27,48 @@ export default function EndGameModal({ score, rounds, onRestart, highScore }) {
           boxShadow: "0 8px 20px rgba(0,0,0,0.3)",
         }}
       >
-        <h2 style={{ marginBottom: 16 }}>🎉 Game Over!</h2>
+        <h2 style={{ marginBottom: 16 }}>🎉 Quiz Complete!</h2>
         <p style={{ fontSize: "1.2rem", marginBottom: 24 }}>
-          You scored <strong>{score}</strong> out of {rounds * 10} points
+          You scored <strong>{score}</strong> out of {maxScore} points
         </p>
-        <p>Your high score: 🏆 <strong>{highScore}</strong></p>
-        <button
-          onClick={onRestart}
-          style={{
-            padding: "10px 20px",
-            background: "#2563eb",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: 600,
-          }}
-        >
-          Play Again
-        </button>
+        <p style={{ fontSize: "1.1rem", color: "#6b7280", marginBottom: 20 }}>
+          {percentage}% correct
+        </p>
+        {highScore && (
+          <p style={{ marginBottom: 20 }}>Your high score: 🏆 <strong>{highScore}</strong></p>
+        )}
+        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+          <button
+            onClick={onRestart}
+            style={{
+              padding: "12px 24px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "1rem",
+            }}
+          >
+            Play Again
+          </button>
+          <button
+            onClick={onExit}
+            style={{
+              padding: "12px 24px",
+              background: "#6b7280",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "1rem",
+            }}
+          >
+            Exit
+          </button>
+        </div>
       </div>
     </div>
   );
