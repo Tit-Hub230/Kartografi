@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import cityRoutes from "./routes/cityRoute.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import cookieParser from "cookie-parser";
+import quizRoutes from "./routes/quizRoutes.js";
 
 
 dotenv.config();
@@ -31,6 +33,7 @@ app.use("/api/users", userRoutes);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/cities", cityRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/quiz", quizRoutes);
 
 // db + server
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/kartografi";
