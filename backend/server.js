@@ -6,7 +6,6 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
 import cityRoutes from "./routes/cityRoute.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
-import cookieParser from "cookie-parser";
 import quizRoutes from "./routes/quizRoutes.js";
 
 

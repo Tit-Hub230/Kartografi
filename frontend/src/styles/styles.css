@@ -167,7 +167,6 @@
     background: #f7f9fc;
   }
   
-  /* Map sizing helpers */
   .map-viewport {
     /* Use this class on the map container div instead of inline style if you prefer */
     height: 75vh;
@@ -175,6 +174,7 @@
   @media (min-width: 1024px) {
     .map-viewport { height: 80vh; }
   }
+  
   
   /* Optional: a full-bleed variant to make the map ultra wide */
   .full-bleed {
@@ -194,4 +194,64 @@
   .setup-container .continent-btn:active,
   .setup-container .mode-btn:active {
     transform: translateY(0);
+  }
+
+  .quiz-types {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .quiz-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(31, 69, 110, 0.18);
+    background: linear-gradient(135deg, rgba(31, 69, 110, 0.08), rgba(47, 107, 79, 0.06));
+    box-shadow: 0 6px 18px rgba(31, 69, 110, 0.12);
+    color: var(--earth);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  .quiz-type:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(31, 69, 110, 0.18);
+  }
+
+  .quiz-type input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ocean);
+  }
+
+  .quiz-type span {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .quiz-type--checked {
+    border-color: rgba(31, 69, 110, 0.55);
+    background: linear-gradient(135deg, rgba(31, 69, 110, 0.16), rgba(47, 107, 79, 0.14));
+    box-shadow: 0 12px 30px rgba(31, 69, 110, 0.22);
+  }
+
+  .quiz-type--checked span {
+    color: var(--ocean);
+  }
+
+  .quiz-type:focus-within {
+    outline: 2px solid rgba(31, 69, 110, 0.25);
+    outline-offset: 2px;
+  }
+
+  .quiz-map-embed {
+    margin-top: 16px;
+    border-radius: 14px;
+    border: 1px solid #d6dde8;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(31, 69, 110, 0.18);
+    min-height: clamp(280px, 55vh, 520px);
   }

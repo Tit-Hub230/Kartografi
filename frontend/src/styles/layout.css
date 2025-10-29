@@ -8,15 +8,13 @@
   
   * { box-sizing: border-box }
   
-  .app-shell {
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    background:
-      linear-gradient(0deg, rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 40px);
-    color: var(--earth);
-  }
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background-color: #f1f3f5;
+  color: var(--earth);
+}
   
   /* NAVBAR */
   .navbar {

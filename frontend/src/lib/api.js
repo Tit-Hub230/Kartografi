@@ -19,4 +19,5 @@ async function request(path, options = {}) {
 export const api = {
   register: (body) => request("/api/users", { method: "POST",credentials:"include", body: JSON.stringify(body) }),
   login:    (body) => request("/api/users/login", { method: "POST", credentials:"include", body: JSON.stringify(body) }),
+  quiz:     (body) => request("/api/quiz", { method: "POST", body: JSON.stringify(body) }),
 };
