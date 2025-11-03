@@ -1,13 +1,16 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import L from "leaflet";
 import SloMapLeaflet from "../components/SloMapLeaflet";
+import { useAuth } from "../context/AuthContext";
 import sloBorder from "../assets/sloBorder.json";
 import pinIconPng from "../assets/pin.png";
 import correctIconPng from "../assets/greenpin.png";
 import EndGameModal from "../components/EndGamePopUp";
+import { useNavigate } from "react-router-dom";
 
 
 export default function Quiz() {
+  const navigate = useNavigate();
   const mapRef = useRef(null);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -18,8 +21,10 @@ export default function Quiz() {
   const [correctMarkerInstance, setCorrectMarkerInstance] = useState(null);
   const [showEndModal, setShowEndModal] = useState(false);
   const [highScore, setHighScore] = useState(0);
+  const { user } = useAuth();
 
   const MAX_ROUNDS = 5;
+  const maxScore = MAX_ROUNDS * 10;
   const apiBase = import.meta.env.VITE_API_URL || "http://localhost:5050";
 
   const customIcon = L.icon({
@@ -139,13 +144,18 @@ export default function Quiz() {
     if (submit_round_button) submit_round_button.disabled = true;
   }
 
-  // ✅ Save high score when game ends
   function saveHighScore(finalScore) {
-    fetch(`${apiBase}api/leaderboard/slo-highscore`, {
+    fetch(`${apiBase}api/leaderboard/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include", // include cookies
-      body: JSON.stringify({ score: finalScore }),
+      credentials: "include",
+      body: JSON.stringify({
+        userId: user._id, 
+        username: user.username, 
+        gameType: "slovenian-cities", 
+        score: finalScore, 
+        maxScore: maxScore, 
+        percentage: ((finalScore / maxScore) * 100).toFixed(0)}),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -161,7 +171,7 @@ export default function Quiz() {
 
   function handleNextRound() {
     if (round >= MAX_ROUNDS) {
-      saveHighScore(score); // ✅ check/update high score at end
+      saveHighScore(score); 
       setShowEndModal(true);
     } else {
       setRound((r) => r + 1);
@@ -255,7 +265,7 @@ export default function Quiz() {
         </div>
       </div>
 
-      {/* ✅ End Modal shows both score + high score */}
+      
       {showEndModal && (
         <EndGameModal
           score={score}
@@ -270,6 +280,8 @@ export default function Quiz() {
             setTargetCity("");
             fetchRandomCity();
           }}
+          onExit={() => navigate("/")}
+          maxScore={maxScore}
         />
       )}
     </div>

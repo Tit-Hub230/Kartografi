@@ -6,15 +6,22 @@ import User from '../models/User.js';
 export const getSloHighScore = async (req, res) => {
   try {
     const userId = req.cookies.userId;
-    
+
     if (!userId) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    const user = await User.findById(userId).select("slo_points");
-    if (!user) return res.status(404).json({ error: "User not found" });
+    
+    const entry = await Leaderboard.findOne({ 
+      userId, 
+      gameType: "slovenian-cities" 
+    }).sort({ score: -1 }); 
 
-    return res.json({ slo_points: user.slo_points || 0 });
+    if (!entry) {
+      return res.json({ slo_points: 0 });
+    }
+
+    return res.json({ slo_points: entry.score || 0 });
   } catch (err) {
     console.error("Error getting slo_points:", err);
     return res.status(500).json({ error: "Internal server error" });
@@ -79,17 +86,21 @@ export const getQuizLeaderboard = async (req, res) => {
 // Submit a score (creates or updates user's best score)
 export const submitScore = async (req, res) => {
   try {
-    const { gameType, continent, score, maxScore, percentage, userId, username } = req.body;
+    let { gameType, continent, score, maxScore, percentage, userId, username } = req.body;
 
     // Validate required fields
     if (!gameType || score === undefined || maxScore === undefined || percentage === undefined) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    if (!userId || !username) {
+    if (!userId) {
       return res.status(400).json({ message: 'userId and username are required' });
     }
-
+    if(!username){
+      const user = await User.findById(userId);
+      if (!user) return res.status(400).json({ error: "User not found" });
+      username = user.username;
+    }
     // For countries game, continent is required
     if (gameType === 'countries' && !continent) {
       return res.status(400).json({ message: 'Continent is required for countries game' });

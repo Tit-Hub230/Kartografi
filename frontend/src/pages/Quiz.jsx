@@ -903,6 +903,7 @@ export default function Quiz() {
               setShowEndGame(false);
               resetGame();
             }}
+            maxScore={maxScore}
           />
         )}
       </div>

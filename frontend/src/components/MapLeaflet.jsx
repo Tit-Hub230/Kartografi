@@ -1,34 +1,22 @@
-// src/components/MapLeaflet.jsx
 import { useEffect, useMemo, useState, useImperativeHandle, forwardRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-// Click-to-add disabled for quiz mode
+
 function ClickToAddMarker() {
-  // Disabled - we don't want markers placed during quiz
   return null;
 }
 
-// Countries layer that can use inline data OR fetch a URL
 function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
   const [geo, setGeo] = useState(data ?? null);
 
   useEffect(() => {
-    if (data || !dataUrl) return; // already have data or no URL given
+    if (data || !dataUrl) return;
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch(dataUrl, { cache: 'no-cache' });
-        if (!res.ok) {
-          console.warn(`CountriesLayer: ${dataUrl} returned HTTP ${res.status}`);
-          return;
-        }
-        const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json') && !ct.includes('geo+json')) {
-          const text = await res.text();
-          console.warn('CountriesLayer: response is not JSON. First bytes:', text.slice(0, 120));
-          return;
-        }
+        if (!res.ok) return;
         const json = await res.json();
         if (!cancelled) setGeo(json);
       } catch (e) {
@@ -52,8 +40,6 @@ function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
     
     layer.bindTooltip(name, { sticky: true });
 
-    // Check if this is the selected country using multiple criteria
-    // Compare ISO-2, ISO-3 (excluding "-99" placeholder), and fallback to name comparison
     const isSelected = selectedCountry && (
       (iso && selectedIso && iso.length === 2 && iso !== '-99' && iso === selectedIso) ||
       (iso3 && selectedIso3 && iso3.length === 3 && iso3 !== '-99' && iso3 === selectedIso3) ||
@@ -66,21 +52,15 @@ function CountriesLayer({ data, dataUrl, onCountryClick, selectedCountry }) {
 
     layer.on({
       mouseover: (e) => { 
-        if (!isSelected) {
-          e.target.setStyle(highlightStyle); 
-        }
+        if (!isSelected) e.target.setStyle(highlightStyle); 
         e.target.bringToFront?.(); 
       },
       mouseout: (e) => {
-        if (!isSelected) {
-          e.target.setStyle(baseStyle);
-        } else {
-          e.target.setStyle(selectedStyle);
-        }
+        if (!isSelected) e.target.setStyle(baseStyle);
+        else e.target.setStyle(selectedStyle);
       },
       click: (e) => {
-        // Don't show popup - just trigger the click handler
-        onCountryClick?.(feature, e);
+        onCountryClick?.(feature);
       },
     });
   }
@@ -95,10 +75,10 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     zoom = 4,
     initialMarkers = [],
     fetchFromBackend = false,
-    countriesData,                // <- NEW: pass inline GeoJSON
-    countriesUrl,                 // optional fallback URL
-    onCountryClick,               // <- NEW: callback for country clicks
-    selectedCountry,              // <- NEW: currently selected country for highlighting
+    countriesData,
+    countriesUrl,
+    onCountryClick,
+    selectedCountry,
   },
   ref
 ) {
@@ -110,11 +90,7 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     (async () => {
       try {
         const res = await fetch(`${apiBase}api/places`, { cache: 'no-cache' });
-        if (res.status === 404) {
-          console.warn('No /api/places route (404). Skipping markers fetch.');
-          return;
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data) && data.length) setMarkers(data);
       } catch (e) {
@@ -145,6 +121,97 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     return null;
   }
 
+  const safeRender = (val) => {
+    if (typeof val === "string") return val;
+    if (Array.isArray(val)) return val.join(", ");
+    if (val && typeof val === "object") return val.text ?? JSON.stringify(val);
+    return "N/A";
+  };
+
+ 
+  async function handleCountryClick(feature) {
+  const gec = feature?.properties?.FIPS_10 || feature?.properties?.FIPS || feature?.properties?.fips || '';
+  const region = getRegionFromFeature(feature);
+  let factbookData = null;
+
+  try {
+    if (gec && region) {
+      const url = `https://raw.githubusercontent.com/factbook/factbook.json/master/${region}/${gec.toLowerCase()}.json`;
+      const res = await fetch(url);
+      if (res.ok) {
+        factbookData = await res.json();
+      } else {
+        console.warn(`Factbook JSON not found for ${feature.properties.ADMIN}`);
+      }
+    }
+  } catch (err) {
+    console.warn("Factbook fetch error:", err);
+  }
+
+
+  const background = traverseField(factbookData?.Introduction?.Background ?? "N/A");
+
+  const geography = factbookData?.Geography ?? {};
+  const geographyFields = {
+    location: traverseField(geography.Location),
+    borderCountries: traverseField(geography["Land boundaries"]?.["border countries"]),
+    coastline: traverseField(geography.Coastline),
+    climate: traverseField(geography.Climate),
+    terrain: traverseField(geography.Terrain),
+    highestPoint: traverseField(geography.Elevation?.["highest point"]),
+    lowestPoint: traverseField(geography.Elevation?.["lowest point"]),
+    naturalResources: traverseField(geography["Natural resources"]),
+    landUse: traverseField(geography["Land use"]),
+    majorRivers: traverseField(geography["Major rivers (by length in km)"]),
+    naturalDisasters: traverseField(geography["Natural hazards"]),
+  };
+
+  const people = factbookData?.["People and Society"] ?? null;
+  const peopleFields = people ? {
+    population: traverseField(people.Population?.total),
+    nationality: traverseField(people.Nationality),
+    ethnicGroups: traverseField(people["Ethnic groups"]),
+    languages: traverseField(people.Languages?.Languages),
+  } : null; 
+
+  const iso2 = feature?.properties?.ISO_A2 || feature?.properties?.iso_a2 || "";
+
+  onCountryClick?.({
+    feature,
+    name: feature.properties.ADMIN,
+    iso2,
+    background,
+    geography: geographyFields,
+    people: peopleFields,
+  });
+}
+function traverseField(val) {
+  if (!val) return "N/A";
+
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) return val.join(", ");
+  if (typeof val === "object") {
+    if (val.text) return val.text;
+
+    return Object.entries(val)
+      .map(([k, v]) => `${k}: ${traverseField(v)}`)
+      .join("; ");
+  }
+  return String(val);
+}
+  function getRegionFromFeature(feature) {
+    const regionMap = {
+      "Africa": "africa",
+      "Asia": "asia",
+      "Europe": "europe",
+      "North America": "north-america",
+      "South America": "south-america",
+      "Oceania": "oceania",
+      "Antarctica": "antarctica"
+    };
+    return regionMap[feature?.properties?.CONTINENT] || null;
+  }
+
   return (
     <div style={{ height: '100%', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
       <MapContainer
@@ -167,7 +234,7 @@ const MapLeaflet = forwardRef(function MapLeaflet(
         <CountriesLayer 
           data={countriesData} 
           dataUrl={countriesUrl} 
-          onCountryClick={onCountryClick}
+          onCountryClick={handleCountryClick}
           selectedCountry={selectedCountry}
         />
 

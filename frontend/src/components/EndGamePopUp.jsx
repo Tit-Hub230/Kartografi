@@ -1,6 +1,5 @@
-export default function EndGameModal({ score, totalQuestions, onRestart, onExit, highScore }) {
-  const maxScore = totalQuestions * 100; // 100 points per question, max 500 for 5 questions
-  const percentage = totalQuestions > 0 ? Math.round((score / maxScore) * 100) : 0;
+export default function EndGameModal({ score, totalQuestions, onRestart, onExit, highScore, maxScore }) {
+  const percentage = (score / maxScore * 100).toFixed(0);
   
   return (
     <div
