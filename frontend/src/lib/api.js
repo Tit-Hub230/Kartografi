@@ -1,9 +1,9 @@
-// src/lib/api.js
-const BASE = (import.meta.env.VITE_API_URL || "http://localhost:5050").replace(/\/+$/, ""); // normalize trailing slash
+const BASE = (import.meta.env.VITE_API_URL || "http://localhost:5050").replace(/\/+$/, "");
 
 async function request(path, options = {}) {
   const url = path.startsWith("/") ? `${BASE}${path}` : `${BASE}/${path}`;
   const res = await fetch(url, {
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
@@ -17,7 +17,9 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  register: (body) => request("/api/users", { method: "POST",credentials:"include", body: JSON.stringify(body) }),
-  login:    (body) => request("/api/users/login", { method: "POST", credentials:"include", body: JSON.stringify(body) }),
+  register: (body) => request("/api/users", { method: "POST", body: JSON.stringify(body) }),
+  login:    (body) => request("/api/users/login", { method: "POST", body: JSON.stringify(body) }),
+  logout:   ()     => request("/api/users/logout", { method: "POST" }),
+  verifySession: () => request("/api/users/me", { method: "GET" }),
   quiz:     (body) => request("/api/quiz", { method: "POST", body: JSON.stringify(body) }),
 };

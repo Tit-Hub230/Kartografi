@@ -1,14 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-// backend/controllers/userController.js
 import User from "../models/User.js";
 
-/**
- * POST /api/users/login
- * body: { username, password }
- * (simple demo login that just verifies creds and returns user;
- *  later you can add JWT/session)
- */
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -18,26 +11,20 @@ export const login = async (req, res) => {
     const ok = await user.comparePassword(password);
     if (!ok) return res.status(401).json({ message: "invalid credentials" });
 
-    // In a real app, issue a JWT or set a session cookie here.
     console.log("Logging in user:", user._id.toString());
-    //req.session.userId = user._id.toString();
     res.cookie( "userId",user._id.toString(), {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-      secure: false, // Set to true in production if using HTTPS
+      maxAge: 1000 * 60 * 60 * 24,
+      secure: false,
     });
 
-    return res.json(user); // toJSON strips password
+    return res.json(user);
   } catch (err) {
     console.error("login error:", err);
     return res.status(500).json({ message: "server error" });
   }
 };
-/**
- * POST /api/users
- * Create a user (register)
- * body: { username, password, points? }
- */
+
 export const createUser = async (req, res) => {
   try {
     console.log("HERE");
@@ -53,17 +40,20 @@ export const createUser = async (req, res) => {
     }
 
     const user = await User.create({ username, password, points });
-    return res.status(201).json(user); // password already stripped by toJSON
+    
+    res.cookie("userId", user._id.toString(), {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+      secure: false,
+    });
+    
+    return res.status(201).json(user);
   } catch (err) {
     console.error("createUser error:", err);
     return res.status(500).json({ message: "server error" });
   }
 };
 
-/**
- * GET /api/users
- * List users (basic demo; in production you'd paginate/secure this)
- */
 export const listUsers = async (_req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -74,10 +64,6 @@ export const listUsers = async (_req, res) => {
   }
 };
 
-/**
- * GET /api/users/:id
- * Fetch one user
- */
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
@@ -89,11 +75,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-/**
- * PATCH /api/users/:id/points
- * Update only points (int)
- * body: { points }
- */
 export const updateUserPoints = async (req, res) => {
   try {
     const { points } = req.body;
@@ -114,11 +95,6 @@ export const updateUserPoints = async (req, res) => {
   }
 };
 
-
-
-/**
- * DELETE /api/users/:id
- */
 export const deleteUser = async (req, res) => {
   try {
     const out = await User.findByIdAndDelete(req.params.id);
@@ -169,11 +145,40 @@ export const changePassword = async (req, res) => {
     const ok = await user.comparePassword(currentPassword);
     if (!ok) return res.status(401).json({ message: "current password incorrect" });
 
-    user.password = newPassword; // will be hashed by pre('save')
+    user.password = newPassword;
     await user.save();
     return res.json({ message: "password updated" });
   } catch (err) {
     console.error("changePassword error:", err);
+    return res.status(500).json({ message: "server error" });
+  }
+};
+
+export const verifySession = async (req, res) => {
+  try {
+    const userId = req.cookies.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "not authenticated" });
+    }
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "user not found" });
+    }
+
+    return res.json(user);
+  } catch (err) {
+    console.error("verifySession error:", err);
+    return res.status(500).json({ message: "server error" });
+  }
+};
+
+export const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("userId");
+    return res.json({ message: "logged out" });
+  } catch (err) {
+    console.error("logout error:", err);
     return res.status(500).json({ message: "server error" });
   }
 };
