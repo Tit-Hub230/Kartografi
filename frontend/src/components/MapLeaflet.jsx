@@ -121,13 +121,6 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     return null;
   }
 
-  const safeRender = (val) => {
-    if (typeof val === "string") return val;
-    if (Array.isArray(val)) return val.join(", ");
-    if (val && typeof val === "object") return val.text ?? JSON.stringify(val);
-    return "N/A";
-  };
-
  
   async function handleCountryClick(feature) {
   const gec = feature?.properties?.FIPS_10 || feature?.properties?.FIPS || feature?.properties?.fips || '';
@@ -163,16 +156,37 @@ const MapLeaflet = forwardRef(function MapLeaflet(
     naturalResources: traverseField(geography["Natural resources"]),
     landUse: traverseField(geography["Land use"]),
     majorRivers: traverseField(geography["Major rivers (by length in km)"]),
+    majorLakes: traverseField(geography["Major lakes (area sq km)"]),
     naturalDisasters: traverseField(geography["Natural hazards"]),
   };
 
   const people = factbookData?.["People and Society"] ?? null;
-  const peopleFields = people ? {
-    population: traverseField(people.Population?.total),
-    nationality: traverseField(people.Nationality),
-    ethnicGroups: traverseField(people["Ethnic groups"]),
-    languages: traverseField(people.Languages?.Languages),
-  } : null; 
+const government = factbookData?.["Government"] ?? null;
+const environment = factbookData?.["Environment"] ?? null;
+
+const peopleFields = people ? {
+  population: traverseField(people.Population?.total),
+  nationality: traverseField(people.Nationality),
+  ethnicGroups: traverseField(people["Ethnic groups"]),
+  languages: traverseField(people.Languages?.Languages),
+  religions: traverseField(people.Religions),
+  
+  // Environment
+  envIssues: traverseField(environment?.["Current issues"]),
+  
+  // Government
+  independence: traverseField(government?.Independence),
+  governmentType: traverseField(government?.["Government type"]),
+  etymology: traverseField(government?.["Country name"]?.etymology),
+  longName: traverseField(government?.["Country name"]?.["conventional long form"]),
+  capital: traverseField(government?.Capital?.name),
+  capitalEtymology: traverseField(government?.Capital?.etymology),
+  president: traverseField(government?.["Executive branch"]?.["chief of state"]),
+  premier: traverseField(government?.["Executive branch"]?.["head of government"]),
+  electionProcess: traverseField(government?.["Executive branch"]?.["election/appointment process"]),
+} : null;
+
+  
 
   const iso2 = feature?.properties?.ISO_A2 || feature?.properties?.iso_a2 || "";
 
